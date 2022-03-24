@@ -27,13 +27,19 @@ package com.cocos.lib;
 import android.content.Context;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
+import android.view.inputmethod.EditorInfo;
+
+import com.google.androidgamesdk.gametextinput.GameTextInput;
+import com.google.androidgamesdk.gametextinput.InputConnection;
 
 public class CocosSurfaceView extends SurfaceView {
     private CocosTouchHandler mTouchHandler;
+    private CocosTextInput mCocosTextInput;
 
-    public CocosSurfaceView(Context context) {
+    public CocosSurfaceView(Context context, CocosTextInput cocosTextInput) {
         super(context);
         mTouchHandler = new CocosTouchHandler();
+        mCocosTextInput = cocosTextInput;
     }
 
     private native void nativeOnSizeChanged(final int width, final int height);
@@ -52,5 +58,18 @@ public class CocosSurfaceView extends SurfaceView {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         return mTouchHandler.onTouchEvent(event);
+    }
+
+    @Override
+    public android.view.inputmethod.InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        InputConnection inputConnection = mCocosTextInput.getInputConnection();
+        if (null == inputConnection) {
+            return super.onCreateInputConnection(outAttrs);
+        }
+        if (outAttrs != null) {
+            GameTextInput.copyEditorInfo(inputConnection.getEditorInfo(), outAttrs);
+        }
+
+        return inputConnection;
     }
 }

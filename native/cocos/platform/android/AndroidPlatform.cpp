@@ -27,8 +27,19 @@
 
 #include "platform/android/AndroidPlatform.h"
 #include "platform/java/jni/glue/JniNativeGlue.h"
+#include "cocos/renderer/gfx-base/GFXDevice.h"
+#include "game-text-input/gametextinput.h"
+#include "CocosTextInput.h"
 
 namespace cc {
+
+static std::atomic_bool textInputStateChanged{false};
+static void *textInputContext{nullptr};
+void onTextInputEventCallback(void *context, const GameTextInputState *current_state) {
+    textInputStateChanged = true;
+    textInputContext = context;
+}
+
 AndroidPlatform::AndroidPlatform() {
     _jniNativeGlue = JNI_NATIVE_GLUE();
 }
@@ -61,10 +72,25 @@ void AndroidPlatform::waitWindowInitialized() {
     _jniNativeGlue->setEventDispatch(this);
 }
 
+extern void notifyTextInputChange(const std::string &txt);
+
+extern void notifyTextInputComplete(const std::string &txt);
+
+extern void notifyTextInputConfirm(const std::string &txt);
+
 int32_t AndroidPlatform::loop() {
     while (_jniNativeGlue->isRunning()) {
         pollEvent();
+        if (textInputStateChanged) {
+            GameTextInput_getState(cc::gameTextInput,
+                                   [](void *context, const GameTextInputState *state) {
+                                       notifyTextInputChange(state->text_UTF8);
+                                    },
+                                   textInputContext);
+            textInputStateChanged = false;
+        }
         runTask();
+
     }
     return 0;
 }

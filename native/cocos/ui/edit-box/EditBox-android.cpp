@@ -28,6 +28,7 @@
 #include "cocos/bindings/jswrapper/SeApi.h"
 #include "cocos/bindings/manual/jsb_global.h"
 #include "platform/java/jni/JniHelper.h"
+#include "platform/android/CocosTextInput.h"
 
 #ifndef JCLS_EDITBOX
     #define JCLS_EDITBOX "com/cocos/lib/CocosEditBoxActivity"
@@ -73,19 +74,21 @@ namespace cc {
 bool EditBox::_isShown = false; //NOLINT
 
 void EditBox::show(const cc::EditBox::ShowInfo &showInfo) {
-    JniHelper::callStaticVoidMethod(JCLS_EDITBOX,
-                                    "showNative",
-                                    showInfo.defaultValue,
-                                    showInfo.maxLength,
-                                    showInfo.isMultiline,
-                                    showInfo.confirmHold,
-                                    showInfo.confirmType,
-                                    showInfo.inputType);
+//    JniHelper::callStaticVoidMethod(JCLS_EDITBOX,
+//                                    "showNative",
+//                                    showInfo.defaultValue,
+//                                    showInfo.maxLength,
+//                                    showInfo.isMultiline,
+//                                    showInfo.confirmHold,
+//                                    showInfo.confirmType,
+//                                    showInfo.inputType);
+    showIme(showInfo.defaultValue, showInfo.confirmType, showInfo.inputType, showInfo.isMultiline);
     _isShown = true;
 }
 
 void EditBox::hide() {
-    JniHelper::callStaticVoidMethod(JCLS_EDITBOX, "hideNative");
+    hideIme();
+//    JniHelper::callStaticVoidMethod(JCLS_EDITBOX, "hideNative");
     _isShown = false;
 }
 
@@ -99,21 +102,16 @@ bool EditBox::complete() {
     return true;
 }
 
+void notifyTextInputChange(const std::string &txt) {
+    callJSFunc("input", txt);
+}
+
+void notifyTextInputComplete(const std::string &txt) {
+    callJSFunc("complete", txt);
+}
+
+void notifyTextInputConfirm(const std::string &txt) {
+    callJSFunc("complete", txt);
+}
+
 } // namespace cc
-
-extern "C" {
-JNIEXPORT void JNICALL JNI_EDITBOX(onKeyboardInputNative)(JNIEnv * /*env*/, jclass /*unused*/, jstring text) {
-    auto textStr = cc::JniHelper::jstring2string(text);
-    callJSFunc("input", textStr);
-}
-
-JNIEXPORT void JNICALL JNI_EDITBOX(onKeyboardCompleteNative)(JNIEnv * /*env*/, jclass /*unused*/, jstring text) {
-    auto textStr = cc::JniHelper::jstring2string(text);
-    callJSFunc("complete", textStr);
-}
-
-JNIEXPORT void JNICALL JNI_EDITBOX(onKeyboardConfirmNative)(JNIEnv * /*env*/, jclass /*unused*/, jstring text) {
-    auto textStr = cc::JniHelper::jstring2string(text);
-    callJSFunc("confirm", textStr);
-}
-}

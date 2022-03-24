@@ -32,10 +32,8 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -57,6 +55,7 @@ public class CocosActivity extends Activity implements SurfaceHolder.Callback {
 
     private CocosKeyCodeHandler mKeyCodeHandler;
     private CocosSensorHandler mSensorHandler;
+    private CocosTextInput mCocosTextInput;
 
 
     private native void onCreateNative(Activity activity, AssetManager resourceManager, String obbPath, int sdkVersion);
@@ -101,6 +100,7 @@ public class CocosActivity extends Activity implements SurfaceHolder.Callback {
         Utils.hideVirtualButton();
 
         mOrientationHelper = new CocosOrientationHelper(this);
+        mCocosTextInput.createInputConnection(mSurfaceView);
     }
 
     private void setImmersiveMode() {
@@ -141,7 +141,8 @@ public class CocosActivity extends Activity implements SurfaceHolder.Callback {
         mFrameLayout.setLayoutParams(frameLayoutParams);
         setContentView(mFrameLayout);
 
-        mSurfaceView = new CocosSurfaceView(this);
+        mCocosTextInput = new CocosTextInput(this);
+        mSurfaceView = new CocosSurfaceView(this, mCocosTextInput);
         mSurfaceView.getHolder().addCallback(this);
         mFrameLayout.addView(mSurfaceView);
 

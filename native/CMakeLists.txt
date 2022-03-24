@@ -414,6 +414,7 @@ elseif(ANDROID)
     cocos_source_files(
         cocos/platform/android/AndroidPlatform.cpp
         cocos/platform/android/AndroidPlatform.h
+        cocos/platform/android/CocosTextInput.cpp
     )
 elseif(OHOS)
     cocos_source_files(
@@ -2852,7 +2853,9 @@ if(ANDROID OR OHOS)
         ${CC_EXTERNAL_INCLUDES}
     )
     if(ANDROID)
+        find_package(game-text-input REQUIRED CONFIG)
         target_link_libraries(cocos_jni PUBLIC
+            game-text-input::game-text-input
             android_platform
             android
             log
@@ -2901,7 +2904,7 @@ if(MSVC)
         ${CWD}/external/win64/libs/*.dll
         ${CWD}/external/win64/libs/msvcr/*.dll
     )
-    target_compile_options(${ENGINE_NAME} PUBLIC /MP 
+    target_compile_options(${ENGINE_NAME} PUBLIC /MP
         /bigobj
         /wd4018 # signed/unsigned mismatch
         /wd4244 # type conversion data lost
@@ -3008,6 +3011,7 @@ if(ANDROID)
     find_library(LIB_EGL NAMES EGL)
     find_library(LIB_GLESv2 NAMES GLESv2)
     target_link_libraries(${ENGINE_NAME} PUBLIC
+        game-text-input::game-text-input
         android
         OpenSLES
         ${LIB_EGL}
