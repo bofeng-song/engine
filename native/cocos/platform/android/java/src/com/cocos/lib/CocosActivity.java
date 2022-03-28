@@ -37,16 +37,24 @@ import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.widget.FrameLayout;
+import android.widget.TextView;
+
+import androidx.core.graphics.Insets;
+import androidx.core.view.OnApplyWindowInsetsListener;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import java.io.File;
 import java.lang.reflect.Field;
 
-public class CocosActivity extends Activity implements SurfaceHolder.Callback {
+public class CocosActivity extends Activity implements SurfaceHolder.Callback, OnApplyWindowInsetsListener {
     private boolean mDestroyed;
     private SurfaceHolder mSurfaceHolder;
     private FrameLayout mFrameLayout;
     private CocosSurfaceView mSurfaceView;
+    private CocosTextView mTextView;
     private CocosWebViewHelper mWebViewHelper = null;
     private CocosVideoHelper mVideoHelper = null;
     private CocosOrientationHelper mOrientationHelper = null;
@@ -81,6 +89,7 @@ public class CocosActivity extends Activity implements SurfaceHolder.Callback {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.getWindow().setSoftInputMode(16);
         GlobalObject.setActivity(this);
         CocosHelper.registerBatteryLevelReceiver(this);
         CocosHelper.init(this);
@@ -100,6 +109,18 @@ public class CocosActivity extends Activity implements SurfaceHolder.Callback {
         Utils.hideVirtualButton();
 
         mOrientationHelper = new CocosOrientationHelper(this);
+        mTextView.setInputType(EditorInfo.TYPE_CLASS_TEXT);
+        mTextView.setImeOptions(EditorInfo.IME_ACTION_DONE | EditorInfo.IME_FLAG_NO_FULLSCREEN);
+        mTextView.setSingleLine();
+        mTextView.setImeActionLabel("Search Model", KeyEvent.KEYCODE_ENTER);
+        mTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                return true;
+            }
+        });
+
+        ViewCompat.setOnApplyWindowInsetsListener(this.mSurfaceView, this);
         mCocosTextInput.createInputConnection(mSurfaceView);
     }
 
@@ -144,7 +165,10 @@ public class CocosActivity extends Activity implements SurfaceHolder.Callback {
         mCocosTextInput = new CocosTextInput(this);
         mSurfaceView = new CocosSurfaceView(this, mCocosTextInput);
         mSurfaceView.getHolder().addCallback(this);
+        mTextView = new CocosTextView(this, mCocosTextInput);
+        mTextView.setY(getResources().getDisplayMetrics().heightPixels);
         mFrameLayout.addView(mSurfaceView);
+        mFrameLayout.addView(mTextView);
 
         if (mWebViewHelper == null) {
             mWebViewHelper = new CocosWebViewHelper(mFrameLayout);
@@ -170,6 +194,7 @@ public class CocosActivity extends Activity implements SurfaceHolder.Callback {
         CocosHelper.unregisterBatteryLevelReceiver(this);
         CocosAudioFocusManager.unregisterAudioFocusListener(this);
         CanvasRenderingContext2DImpl.destroy();
+        mCocosTextInput.destroy();
     }
 
     @Override
@@ -272,5 +297,16 @@ public class CocosActivity extends Activity implements SurfaceHolder.Callback {
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         return mKeyCodeHandler.onKeyUp(keyCode, event) || super.onKeyUp(keyCode, event);
+    }
+
+    public WindowInsetsCompat onApplyWindowInsets(View v, WindowInsetsCompat insets) {
+        v.onApplyWindowInsets(insets.toWindowInsets());
+        return insets;
+    }
+
+    public Insets getWindowInsets(int type) {
+        WindowInsetsCompat allInsets = ViewCompat.getRootWindowInsets(this.mSurfaceView);
+        Insets insets = allInsets.getInsets(type);
+        return insets == Insets.NONE ? null : insets;
     }
 }

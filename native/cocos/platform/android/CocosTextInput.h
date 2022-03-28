@@ -78,7 +78,4 @@ namespace cc {
         CMD_SET_SOFT_INPUT_STATE
     };
 
-    extern CocosTextInput *cocosTextInput;
-    void *cocosTextInputJObject{nullptr};
-
 } // namespace cc

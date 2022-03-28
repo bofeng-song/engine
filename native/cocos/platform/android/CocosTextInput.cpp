@@ -35,6 +35,7 @@
 
 #include "base/Log.h"
 #include "base/UTF8.h"
+#include "game-text-input/gametextinput.cpp"
 #include "game-text-input/gametextinput.h"
 
 #ifndef JCLS_COCOS_TEXT_INPUT
@@ -47,6 +48,8 @@ namespace cc {
 
     GameTextInputState innerState;
     CocosTextInput *cocosTextInput = nullptr;
+    jobject cocosTextInputJObject = nullptr;
+    jmethodID setEditorInfoMethodID = nullptr;
 
     /*
  * Write a command to be executed by the GameActivity on the application main
@@ -87,10 +90,10 @@ namespace cc {
 
 
     void setEditorInfo(const std::string &confirmType, const std::string &inputType, bool isMultiline) {
-        JNIEnv *env = JniHelper::getEnv();
+        _JNIEnv *env = JniHelper::getEnv();
         jstring jstrCfrmType = cc::StringUtils::newStringUTFJNI(env, confirmType);
         jstring jstrInputType = cc::StringUtils::newStringUTFJNI(env, inputType);
-//        JniHelper::callObjectVoidMethod((jobject)cc::cocosTextInputJObject, JCLS_COCOS_TEXT_INPUT, "setEditorInfo", jstrCfrmType, jstrInputType, isMultiline);
+        env->CallVoidMethod(cc::cocosTextInputJObject, cc::setEditorInfoMethodID, jstrCfrmType, jstrInputType, isMultiline);
 
         if (jstrCfrmType) {
             env->DeleteLocalRef(jstrCfrmType);
@@ -120,7 +123,7 @@ namespace cc {
                 innerState.text_UTF8 = work.defaultTxt.c_str();
                 innerState.text_length = work.defaultTxt.length();
                 GameTextInputSpan span;
-                span.end = span.start = work.defaultTxt.length() - 1;
+                span.end = span.start = work.defaultTxt.length();
                 innerState.selection = span;
                 GameTextInput_setState(input->gameTextInput, &innerState);
                 GameTextInput_showIme(input->gameTextInput, ShowImeFlags::SHOW_FORCED);
@@ -206,15 +209,20 @@ namespace cc {
 extern "C" {
 
 //NOLINTNEXTLINE
-JNIEXPORT void JNICALL Java_com_cocos_lib_CocosTextInput_initNative(JNIEnv *env, jobject obj, jobject cocosTextInput) {
+JNIEXPORT void JNICALL Java_com_cocos_lib_CocosTextInput_initNative(JNIEnv *env, jclass clsTextInput) {
     cc::gameTextInput = GameTextInput_init(env, 0);
     cc::cocosTextInput = new cc::CocosTextInput();
+    cc::setEditorInfoMethodID = env->GetMethodID(clsTextInput, "setEditorInfo", "(Ljava/lang/String;Ljava/lang/String;Z)V");
 }
 
 //NOLINTNEXTLINE
-JNIEXPORT void JNICALL Java_com_cocos_lib_CocosTextInput_setInputConnectionNative(JNIEnv *env, jobject obj, jobject inputConnection, jobject cocosTextInput) {
-    cc::gameTextInput = GameTextInput_init(env, 0);
-    cc::cocosTextInput = new cc::CocosTextInput();
+JNIEXPORT void JNICALL Java_com_cocos_lib_CocosTextInput_destroyNative(JNIEnv *env, jclass obj) {
+    env->DeleteGlobalRef(cc::cocosTextInputJObject);
+    GameTextInput_destroy(cc::gameTextInput);
+}
+
+//NOLINTNEXTLINE
+JNIEXPORT void JNICALL Java_com_cocos_lib_CocosTextInput_setInputConnectionNative(JNIEnv *env, jobject cocosTextInput, jobject inputConnection) {
     cc::cocosTextInputJObject = env->NewGlobalRef(cocosTextInput);
     GameTextInput_setInputConnection(cc::gameTextInput, inputConnection);
     GameTextInput_setEventCallback(cc::gameTextInput, cc::onTextInputEventCallback, env);
