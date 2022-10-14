@@ -211,12 +211,10 @@ export class LODGroup extends Component {
 
     recalculateBounds () {
         LODGroupEditorUtility.recalculateBounds(this);
-        
     }
 
     resetObjectSize () {
         LODGroupEditorUtility.resetObjectSize(this);
-        
     }
 
     get lodGroup () { return this._lodGroup; }
@@ -441,10 +439,9 @@ export class LODGroupEditorUtility {
             lodGroup.size = Math.max(e.x, e.y, e.z) * 2.0;
         }
         this.emitChangeNode(lodGroup.node);
-
     }
     static emitChangeNode (node:Node) {
-        if(EDITOR){
+        if (EDITOR) {
             // @ts-expect-error Because EditorExtends is Editor only
             EditorExtends.Node.emit('change', node.uuid, node);
         }
