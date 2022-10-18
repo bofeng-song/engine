@@ -34,7 +34,6 @@ import { ShadowType, CSMOptimizationMode } from '../render-scene/scene/shadows';
 import { PipelineSceneData } from './pipeline-scene-data';
 import { ShadowLayerVolume } from './shadow/csm-layers';
 import { warnID } from '../core/platform';
-import { LODGroupUtility } from '../render-scene/scene';
 
 const _tempVec3 = new Vec3();
 const _sphere = Sphere.create(0, 0, 0, 1);
@@ -188,7 +187,7 @@ export function sceneCulling (pipeline: RenderPipeline, camera: Camera) {
     {
         for (const g of scene.lodGroups) {
             if (g.enabled) {
-                const visIndex = LODGroupUtility.getVisibleLOD(g, camera);
+                const visIndex = g.getVisibleLOD(camera);
                 if (visIndex >= 0) {
                     const lod = g.LODs[visIndex];
                     for (const model of lod.models) {

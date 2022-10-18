@@ -27,7 +27,7 @@ import { AABB, intersect } from '../core/geometry';
 import { SetIndex } from './define';
 import { CommandBuffer, Device, RenderPass } from '../gfx';
 import { PipelineStateManager } from './pipeline-state-manager';
-import { Model, Camera, SubModel, LODGroupUtility } from '../render-scene/scene';
+import { Model, Camera, SubModel } from '../render-scene/scene';
 import { RenderInstancedQueue } from './render-instanced-queue';
 import { ShadowType } from '../render-scene/scene/shadows';
 import { Layers } from '../scene-graph/layers';
@@ -70,7 +70,7 @@ export class PlanarShadowQueue {
         {
             for (const g of scene.lodGroups) {
                 if (g.enabled) {
-                    const visIndex = LODGroupUtility.getVisibleLOD(g, camera);
+                    const visIndex = g.getVisibleLOD(camera);
                     if (visIndex >= 0) {
                         const lod = g.LODs[visIndex];
                         for (const model of lod.models) {
