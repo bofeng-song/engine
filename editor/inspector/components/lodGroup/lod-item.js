@@ -112,7 +112,8 @@ exports.methods = {
     },
     updateLODs(operator) {
         const that = this;
-        that.$emit('updateLODs', operator, that.index);
+        // emit method is recommended to all lowercase, camel case may be automatically converted to lowercase resulting in failure to match
+        that.$emit('update-lods', operator, that.index);
     },
     applyCameraSize() {
         const that = this;
@@ -122,8 +123,4 @@ exports.methods = {
         const that = this;
         return `${ that.data.value.triangles.value[meshIndex] ? that.data.value.triangles.value[meshIndex].value : 0 } Triangles`;
     },
-};
-
-exports.mounted = function() {
-    const that = this;
 };
