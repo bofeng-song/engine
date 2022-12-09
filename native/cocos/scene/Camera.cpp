@@ -123,11 +123,13 @@ void Camera::destroy() {
 void Camera::attachToScene(RenderScene *scene) {
     _enabled = true;
     _scene = scene;
+    Root::getInstance()->attachCamera(this);
 }
 
 void Camera::detachFromScene() {
     _enabled = false;
     _scene = nullptr;
+    Root::getInstance()->detachCamera(this);
 }
 
 void Camera::resize(uint32_t width, uint32_t height) {
@@ -439,6 +441,7 @@ void Camera::updateAspect(bool oriented) {
 void Camera::setSystemWindowId(uint32_t windowId) {
     _systemWindowId = windowId;
     detachCamera();
+    _window = nullptr;
     const auto &renderWindows = Root::getInstance()->getWindows();
     for (const auto &window : renderWindows) {
         if (windowId == window->getSwapchain()->getWindowId()) {

@@ -643,11 +643,10 @@ void Root::addWindowEventListener() {
 
         // nativeWindow maybe construct after Root's initialize.
         if (!isRenderWindowCreated) {
-            auto* renderWindow = cc::Root::getInstance()->createRenderWindowFromSystemWindow(windowId);
-            auto &cameraList = cc::Root::getInstance()->getCameraList();
-            for (auto &camera : cameraList) {
+            auto* renderWindow = createRenderWindowFromSystemWindow(windowId);
+            for (auto &camera : _allCameras) {
                 if (windowId == camera->getSystemWindowId()) {
-                    renderWindow->attachCamera(camera);
+                    camera->changeTargetWindow(renderWindow);
                     renderWindow->onNativeWindowResume(windowId);
                 }
             }
@@ -660,4 +659,19 @@ void Root::removeWindowEventListener() {
     _windowRecreatedListener.reset();
 }
 
+void Root::attachCamera(scene::Camera *camera) {
+    for (scene::Camera *cam : _allCameras) {
+        if (cam == camera) return;
+    }
+    _allCameras.emplace_back(camera);
+}
+
+void Root::detachCamera(scene::Camera *camera) {
+    for (auto it = _allCameras.begin(); it != _allCameras.end(); ++it) {
+        if (*it == camera) {
+            _allCameras.erase(it);
+            return;
+        }
+    }
+}
 } // namespace cc
