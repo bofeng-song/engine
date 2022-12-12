@@ -124,7 +124,7 @@ JNIEXPORT void JNICALL Java_com_cocos_lib_CocosSurfaceView_onSurfaceCreatedNativ
 
     auto *sysWindow = static_cast<cc::SystemWindow *>(iSysWindow);
     sysWindow->setWindowHandle(nativeWindow);
-    if (oldNativeWindow) {
+    if (oldNativeWindow || windowId>127) {
         auto func = [sysWindow]() -> void {
             cc::events::WindowRecreated::broadcast(sysWindow->getWindowId());
         };
