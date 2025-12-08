@@ -35,7 +35,7 @@ class HTMLImageElement extends HTMLElement {
                     this.dispatchEvent(event);
                 }, 0);
         }).catch(err => {
-            console.warng(`Failed to load source image from ${src}, error reason: ${err}`);
+            console.warn(`Failed to load source image from ${src}, error reason: ${err}`);
             this._data = null;
             setTimeout(()=>{
                 var event = new Event('error');
